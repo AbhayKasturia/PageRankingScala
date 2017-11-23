@@ -74,7 +74,8 @@ The SAX parser remains the same for Scala as well and the rest of the mapping is
 the parsePage contains data after being parsed by SAX , in the following format as a single string:
 
 page_name:outlink1,outlink2,.........
-'''val processedPages = parsePage // removing documents which are null
+'''scala
+val processedPages = parsePage // removing documents which are null
 .filter(doc => !(doc == ""))
 .map(doc => {
 val page = doc.substring(0,doc.indexOf(":"))
