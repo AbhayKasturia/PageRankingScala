@@ -157,29 +157,26 @@ top100.saveAsTextFile(args(1))
 
 There are several differences between the two approaches .
 
-Spark manages shuffling better than hadoop as Spark loads all the data into memory as compared to
+1. Spark manages shuffling better than hadoop as Spark loads all the data into memory as compared to
 Hadoop where it has a threshold to loading data into memory. Spark relies on OS for such thresholds.
 Executing batch processing jobs in Spark is about 10 to 100 times faster than the Hadoop MapReduce
 framework just by merely cutting down on the number of reads and writes to the disc.
 
-Spark API extends it’s functionality in terms of the RDD which is very powerful in terms of parallel
+2. Spark API extends it’s functionality in terms of the RDD which is very powerful in terms of parallel
 computation , is fault tolerance in terms of node failures and has overall a good efficiency.
 Using Spark in Scala we can execute more logic using a fewer lines of code as compared to
 MapReduce in Java. and is thus less verbose.
 
-Spark had several optimizations for Page Rank by providing RDD (which helped us parallely operate on
+3. Spark had several optimizations for Page Rank by providing RDD (which helped us parallely operate on
 the graph) and the lazy approach worked in favour of reducing the overall processing time. It also
 provided the option to keep the data which was used again and again in the memory , using persist
 option which fasten the execution.
 
-Since Spark advantages are mostly related to loading the data into memory and fastening the overall
+4. Since Spark advantages are mostly related to loading the data into memory and fastening the overall
 process. Thus , the memory in the Spark cluster should be at least as large as the amount of data we
 need to process, because the data has to fit into the memory for optimal performance. So, if we need
 to process really Big Data, Hadoop will be a cheaper option since Hadoop uses hard disk more than
-the memory and hard disk space comes at a much lower price.
-
-But Spark can be cost effective in the terms of hardware used. Since spark requires less computational
-time, it can be cheaper in a cloud based environment such as EMR, where compute power is paid per
+the memory and hard disk space comes at a much lower price. But Spark can be cost effective in the terms of hardware used. Since spark requires less computational time, it can be cheaper in a cloud based environment such as EMR, where compute power is paid per
 use.
 
 Source :berkely.edu , quora and youtube videos.
