@@ -23,7 +23,9 @@ are then run in parallel on RDD.
 
 Also , most RDD operations are lazy operation in the sense that are RDD are kept as a description of a
 series of operations and not actual data. So as for our file file loading:
->val inputPages = sc.textFile(args(0))
+```scala
+val inputPages = sc.textFile(args(0))
+```
 
 It does nothing but creates an RDD that says "we need to load this file". The file is actually not loaded
 until we have some use for InputPages later in the code.
@@ -77,20 +79,20 @@ page_name:outlink1,outlink2,.........
 
 ```scala
 val processedPages = parsePage // removing documents which are null
-.filter(doc => !(doc == ""))
-.map(doc => {
-val page = doc.substring(0,doc.indexOf(":"))
-(page , doc)})
-.map(x => {
-val (page , doc) = x
-if (doc.length > (page.length+1)) {
-/// getting the outlinks from the second part of the document
-val outlinks = doc.substring(doc.indexOf(":")+1)
-(page, outlinks.split(","))
-} else
-// when outlinks are null , it is a sink node!
-(page, Array(""))
-}).persist()
+                      .filter(doc => !(doc == ""))
+                      .map(doc => {
+                            val page = doc.substring(0,doc.indexOf(":"))
+                            (page , doc)})
+                            .map(x => {
+                                  val (page , doc) = x
+                                  if (doc.length > (page.length+1)) {
+                                        /// getting the outlinks from the second part of the document
+                                        val outlinks = doc.substring(doc.indexOf(":")+1)
+                                        (page, outlinks.split(","))
+                                  } else
+                                        // when outlinks are null , it is a sink node!
+                                        (page, Array(""))
+                      }).persist()
 ```
 
 The total number of documents is counted after this step , by a simple count operation on
@@ -107,31 +109,31 @@ val initPR = 1.0 / totalDocs
 var pages = processedPages.map(page => (page._1, (page._2, initPR))).persist() // initial graph
 In iteration :
 {
-var dangSum = pages.filter(x => {
-val (page, (outlinks, pr)) = x
-(outlinks(0) == "")})
-.map(x => { val (page, (outlinks, pr)) = x
-pr})
-.sum() // tracks sum of pr of angling nodes , much more efficient than counters and
-double to long conversions
-// filter non dangling nodes
-// divide the page rank to each of the outlinks
-// sum based on the outlink(page) as the key,
-// use sum , dangsum and the formula to get the final answer
-var pageRank = pages.filter(x => {
-val (page, (outlinks, pr)) = x
-!(outlinks(0) == "")})
-.flatMap(x => {
-val (page, (outlinks, pr)) = x
-outlinks.map(outlink => (outlink, pr / outlinks.size)) })
-.reduceByKey((accum, one_pr) => accum + one_pr)
-.map(x => {
-val (k,v) = x
-(k, (((1-lambda) / totalDocs) + (lambda*v) +
-(lambda*dangSum/totalDocs)))}).persist()
-pages.unpersist()
-// join to get the outlinks back for next iteration
-pages = processedPages.join(pageRank).persist()
+    var dangSum = pages.filter(x => {
+        val (page, (outlinks, pr)) = x
+        (outlinks(0) == "")})
+        .map(x => { val (page, (outlinks, pr)) = x
+        pr})
+    .sum() // tracks sum of pr of angling nodes , much more efficient than counters and
+    double to long conversions
+    // filter non dangling nodes
+    // divide the page rank to each of the outlinks
+    // sum based on the outlink(page) as the key,
+    // use sum , dangsum and the formula to get the final answer
+    var pageRank = pages.filter(x => {
+        val (page, (outlinks, pr)) = x
+        !(outlinks(0) == "")})
+    .flatMap(x => {
+        val (page, (outlinks, pr)) = x
+        outlinks.map(outlink => (outlink, pr / outlinks.size)) })
+    .reduceByKey((accum, one_pr) => accum + one_pr)
+    .map(x => {
+        val (k,v) = x
+        (k, (((1-lambda) / totalDocs) + (lambda*v) +
+        (lambda*dangSum/totalDocs)))}).persist()
+    pages.unpersist()
+    // join to get the outlinks back for next iteration
+    pages = processedPages.join(pageRank).persist()
 }
 ```
 
@@ -143,10 +145,10 @@ take 100 and then mapped to printable format , parallely:
 
 ```scala
 val sortPR = pages.sortBy(_._2._2, false)
-.take(100)
-.map( x => {
-val (page, (outlinks, pr)) = x
-page + "\t" + pr})
+                  .take(100)
+                  .map( x => {
+                      val (page, (outlinks, pr)) = x
+                      page + "\t" + pr})
 val top100 = sc.parallelize(sortPR)
 top100.saveAsTextFile(args(1))
 ```
