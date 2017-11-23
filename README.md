@@ -83,15 +83,15 @@ val processedPages = parsePage // removing documents which are null
                       .map(doc => {
                             val page = doc.substring(0,doc.indexOf(":"))
                             (page , doc)})
-                            .map(x => {
-                                  val (page , doc) = x
-                                  if (doc.length > (page.length+1)) {
-                                        /// getting the outlinks from the second part of the document
-                                        val outlinks = doc.substring(doc.indexOf(":")+1)
-                                        (page, outlinks.split(","))
-                                  } else
-                                        // when outlinks are null , it is a sink node!
-                                        (page, Array(""))
+                      .map(x => {
+                            val (page , doc) = x
+                            if (doc.length > (page.length+1)) {
+                                  /// getting the outlinks from the second part of the document
+                                  val outlinks = doc.substring(doc.indexOf(":")+1)
+                                  (page, outlinks.split(","))
+                            } else
+                                  // when outlinks are null , it is a sink node!
+                                  (page, Array(""))
                       }).persist()
 ```
 
