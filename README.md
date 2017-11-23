@@ -75,7 +75,7 @@ the parsePage contains data after being parsed by SAX , in the following format 
 
 page_name:outlink1,outlink2,.........
 
-'''scala
+```scala
 val processedPages = parsePage // removing documents which are null
 .filter(doc => !(doc == ""))
 .map(doc => {
@@ -90,7 +90,8 @@ val outlinks = doc.substring(doc.indexOf(":")+1)
 } else
 // when outlinks are null , it is a sink node!
 (page, Array(""))
-}).persist()'''
+}).persist()
+```
 
 The total number of documents is counted after this step , by a simple count operation on
 processedPages.
@@ -101,36 +102,38 @@ other pair was used for iteratively running on top of this data and received a k
 (page_name,(outlinks and page_rank)). The same is achieved here with just 3 complex operations :
 
 
->val initPR = 1.0 / totalDocs
->var pages = processedPages.map(page => (page._1, (page._2, initPR))).persist() // initial graph
->In iteration :
->{
->var dangSum = pages.filter(x => {
->val (page, (outlinks, pr)) = x
->(outlinks(0) == "")})
->.map(x => { val (page, (outlinks, pr)) = x
->pr})
->.sum() // tracks sum of pr of angling nodes , much more efficient than counters and
->double to long conversions
->// filter non dangling nodes
->// divide the page rank to each of the outlinks
->// sum based on the outlink(page) as the key,
->// use sum , dangsum and the formula to get the final answer
->var pageRank = pages.filter(x => {
->val (page, (outlinks, pr)) = x
->!(outlinks(0) == "")})
->.flatMap(x => {
->val (page, (outlinks, pr)) = x
->outlinks.map(outlink => (outlink, pr / outlinks.size)) })
->.reduceByKey((accum, one_pr) => accum + one_pr)
->.map(x => {
->val (k,v) = x
->(k, (((1-lambda) / totalDocs) + (lambda*v) +
->(lambda*dangSum/totalDocs)))}).persist()
->pages.unpersist()
->// join to get the outlinks back for next iteration
->pages = processedPages.join(pageRank).persist()
->}
+```scala
+val initPR = 1.0 / totalDocs
+var pages = processedPages.map(page => (page._1, (page._2, initPR))).persist() // initial graph
+In iteration :
+{
+var dangSum = pages.filter(x => {
+val (page, (outlinks, pr)) = x
+(outlinks(0) == "")})
+.map(x => { val (page, (outlinks, pr)) = x
+pr})
+.sum() // tracks sum of pr of angling nodes , much more efficient than counters and
+double to long conversions
+// filter non dangling nodes
+// divide the page rank to each of the outlinks
+// sum based on the outlink(page) as the key,
+// use sum , dangsum and the formula to get the final answer
+var pageRank = pages.filter(x => {
+val (page, (outlinks, pr)) = x
+!(outlinks(0) == "")})
+.flatMap(x => {
+val (page, (outlinks, pr)) = x
+outlinks.map(outlink => (outlink, pr / outlinks.size)) })
+.reduceByKey((accum, one_pr) => accum + one_pr)
+.map(x => {
+val (k,v) = x
+(k, (((1-lambda) / totalDocs) + (lambda*v) +
+(lambda*dangSum/totalDocs)))}).persist()
+pages.unpersist()
+// join to get the outlinks back for next iteration
+pages = processedPages.join(pageRank).persist()
+}
+```
 
 And finally the top k job was implemented in Hadoop using a mapper and reducer , where the mapper
 emitted top 100 records for each of it’s call and the reducer then took the top 100 from the
@@ -138,14 +141,15 @@ cumulative top 100 of the mappers. But in scala we do it in a 2 step process whe
 take 100 and then mapped to printable format , parallely:
 
 
->val sortPR = pages.sortBy(_._2._2, false)
->.take(100)
->.map( x => {
->val (page, (outlinks, pr)) = x
->page + "\t" + pr})
->val top100 = sc.parallelize(sortPR)
->top100.saveAsTextFile(args(1))
-
+```scala
+val sortPR = pages.sortBy(_._2._2, false)
+.take(100)
+.map( x => {
+val (page, (outlinks, pr)) = x
+page + "\t" + pr})
+val top100 = sc.parallelize(sortPR)
+top100.saveAsTextFile(args(1))
+```
 
 ## The advantages and shortcomings of the different approaches. - expressiveness and flexibility of API, applicability to PageRank, available optimizations, memory and disk data footprint, and source code verbosity.
 
